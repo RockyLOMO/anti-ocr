@@ -2,12 +2,12 @@ function $(id) {
     return document.getElementById(id);
 }
 function textToImg() {
-    var len = $('len').value || 30;
+    var len = parseInt($('len').value) || 30;
     var i = 0;
-    var fontSize = $('fontSize').value || 15;
-    var lineSize = $('lineSize').value || 1;
-    var pointSize = $('pointSize').value || 1;
-    var points = $('points').value || 1;
+    var fontSize = parseInt($('fontSize').value) || 15;
+    var lineSize = parseFloat($('lineSize').value) || 1;
+    var pointSize = parseFloat($('pointSize').value) || 1;
+    var points = parseFloat($('points').value) || 1;
     var fontWeight = $('fontWeight').value || 'normal';
     var txt = $("txt").value;
     var canvas = $('canvas');
@@ -27,50 +27,84 @@ function textToImg() {
     context.fillStyle = $("fontcolor").innerHTML;
     context.strokeStyle = $("fontcolor").innerHTML;
 
-    n = txt.length / 5;
-    n2 = txt.length * fontSize * points;
-    for (var i = 0; i < n2; i++) {
-        x = random(0, canvas.width);
-        y = random(0, canvas.height);
-        context.lineWidth = pointSize;
-        context.beginPath();
-        context.moveTo(x, y);
-        context.lineTo(x + 1, y + 1); //隨機畫點
-        context.closePath();
-        context.stroke();
-    }
-    i = 0;
-    for (var i = 0; i < n; i++) {
-        x = random(0, canvas.width);
-        y = random(0, canvas.height);
-        context.lineWidth = lineSize;
-        context.beginPath();
-        context.moveTo(x, y);
-        context.lineTo(x + random( - random(0, canvas.width / 2), random(0, canvas.width / 2)), y + random( - random(0, canvas.width / 2), random(0, canvas.width / 2))); //隨機畫線
-        context.closePath();
-        context.stroke();
-    }
-    i = 0;
+    var fgColor = $("fontcolor").innerHTML;
+    var bgColor = $("backcolor").innerHTML;
 
+    var n = txt.length / 4; // reduced from 1/2 to 1/4
+    var n2 = txt.length * fontSize * points;
+    
+    function drawNoise(dots, lines, color, isSlice) {
+        context.strokeStyle = color;
+        context.fillStyle = color;
+        for (var k = 0; k < dots; k++) {
+            var x = random(0, canvas.width);
+            var y = random(0, canvas.height);
+            context.lineWidth = pointSize;
+            context.beginPath();
+            context.moveTo(x, y);
+            context.lineTo(x + 1, y + 1);
+            context.closePath();
+            context.stroke();
+        }
+        for (var k = 0; k < lines; k++) {
+            var x = random(0, canvas.width);
+            var y = random(0, canvas.height);
+            context.lineWidth = lineSize; // keep standard line size, no thicker slicing
+            context.beginPath();
+            context.moveTo(x, y);
+            var dx = random(-canvas.width/3, canvas.width/3);
+            var dy = random(-canvas.height/6, canvas.height/6);
+            if (isSlice) {
+                context.quadraticCurveTo(x + random(-50, 50), y + random(-50, 50), x + dx, y + dy);
+            } else {
+                context.lineTo(x + dx, y + dy);
+            }
+            context.stroke();
+        }
+    }
+
+    // Draw some noise below text
+    drawNoise(n2 / 2, n / 2, fgColor, false);
+
+    i = 0;
     context.font = fontWeight + ' ' + fontSize + 'px sans-serif';
     context.textBaseline = 'top';
+    context.fillStyle = fgColor;
     canvas.style.display = 'none';
-    function fillTxt(text) {
-        while (text.length > len) {
-            var txtLine = text.substring(0, len);
-            text = text.substring(len);
-            var r = random( - 1, 1) / random(50, 100);
-            context.rotate(r); //隨機旋轉每一行文字
-            context.fillText(txtLine, 10, 5 + fontSize * (3 / 2) * i++, canvas.width);
-            context.rotate(r * -1);
-        }
-        context.fillText(text, 0, fontSize * (3 / 2) * i, canvas.width);
-    }
+
     var txtArray = txt.split("\n");
     for (var j = 0; j < txtArray.length; j++) {
-        fillTxt(txtArray[j]);
-        context.fillText('\n', 0, fontSize * (3 / 2) * i++, canvas.width);
+        var text = txtArray[j];
+        if (text === '') {
+            i++;
+            continue;
+        }
+        for (var k = 0; k < text.length; k += len) {
+            var txtLine = text.substring(k, k + len);
+            var currentX = 10;
+            var baseY = 5 + fontSize * (3 / 2) * i++;
+            for (var charIdx = 0; charIdx < txtLine.length; charIdx++) {
+                var char = txtLine[charIdx];
+                var r = random(-4, 4) * Math.PI / 180; // milder rotation
+                var offsetY = random(-2, 2); // milder Y jitter
+                var offsetX = random(0, 1); // milder X jitter
+                
+                context.save();
+                context.translate(currentX + offsetX, baseY + offsetY);
+                context.rotate(r);
+                context.fillText(char, 0, 0);
+                context.restore();
+                
+                currentX += context.measureText(char).width + random(1, 3); // added letter spacing to prevent clump
+            }
+        }
     }
+
+    // Draw slicing noise (background color) - significantly reduced intensity
+    drawNoise(0, n * 0.4, bgColor, true);
+
+    // Draw remaining noise ON TOP of text to break OCR
+    drawNoise(n2 / 2, n / 2, fgColor, false);
     var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
     var img = $("img");
     img.src = canvas.toDataURL("image/png");
