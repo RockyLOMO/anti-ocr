@@ -54,15 +54,15 @@ function drawNoise(dots, lines, color, isSlice) {
 
     context.beginPath();
     for (var k = 0; k < lines; k++) {
-        // Less destructive slice lines: 1-2px relative to 32px font is very readable
         context.lineWidth = isSlice ? random(1, 3) : random(1, 2); 
         var x = random(0, canvas.width);
         var y = random(0, canvas.height);
         context.moveTo(x, y);
-        var dx = random(-canvas.width/4, canvas.width/4);
-        var dy = random(-canvas.height/4, canvas.height/4);
+        // USE FIXED MAXIMUM LENGTH to prevent center-accumulation of long lines
+        var dx = random(-50, 50);
+        var dy = random(-20, 20);
         if (isSlice) {
-            context.quadraticCurveTo(x + random(-40, 40), y + random(-40, 40), x + dx, y + dy);
+            context.quadraticCurveTo(x + random(-20, 20), y + random(-20, 20), x + dx, y + dy);
         } else {
             context.lineTo(x + dx, y + dy);
         }
@@ -71,22 +71,20 @@ function drawNoise(dots, lines, color, isSlice) {
     }
 }
 
-drawNoise(n2 / 2, n, fgColor, false);
-
 let i = 0;
 context.font = fontWeight + ' ' + fontSize + 'px sans-serif';
 context.textBaseline = 'top';
 context.fillStyle = fgColor;
 
-// Draw thick horizontal connective lines to break OCR segmentation (merges characters)
+// Draw shorter connective lines to break OCR without destroying human readability
 context.beginPath();
-for (var k = 0; k < txt.length * 0.8; k++) {
-    context.lineWidth = random(2, 4);
+for (var k = 0; k < txt.length * 0.5; k++) {
+    context.lineWidth = random(1, 3);
     context.strokeStyle = fgColor;
     var x = random(0, canvas.width);
     var y = random(0, canvas.height);
     context.moveTo(x, y);
-    context.lineTo(x + random(30, 80), y + random(-5, 5)); 
+    context.lineTo(x + random(20, 50), y + random(-3, 3)); 
 }
 context.stroke();
 

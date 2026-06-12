@@ -4,6 +4,18 @@ import time
 import threading
 import subprocess
 import os
+import ctypes
+
+# Prevent multiple instances from running
+mutex_name = "Global\\AntiOCR_Daemon_Mutex_v1"
+mutex = ctypes.windll.kernel32.CreateMutexW(None, False, mutex_name)
+if ctypes.windll.kernel32.GetLastError() == 183: # ERROR_ALREADY_EXISTS
+    print("="*50)
+    print("Warning: Another instance of Anti-OCR Daemon is already running!")
+    print("Closing this duplicate instance...")
+    print("="*50)
+    time.sleep(2)
+    os._exit(1)
 
 CLI_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cli.js')
 MACRO_RUNNING = False
@@ -28,22 +40,31 @@ def do_macro():
         
         # 1. Select All
         keyboard.send('ctrl+a')
-        time.sleep(0.1)
+        time.sleep(0.05) # Just enough for UI selection
         
-        # 2. Copy
+        # 2. Copy (Fast Polling instead of fixed sleep)
+        pyperclip.copy("") # clear it first
         keyboard.send('ctrl+c')
-        time.sleep(0.2)
         
-        text = pyperclip.paste()
+        # Poll clipboard until it's populated (max 0.3s)
+        text = ""
+        for _ in range(30):
+            text = pyperclip.paste()
+            if text and text.strip() != "":
+                break
+            time.sleep(0.01)
         
         if text and text.strip() != "":
             print(f"-> Selected text length: {len(text)}. Generating image...")
-            subprocess.run(['node', CLI_PATH, text], shell=True)
-            time.sleep(0.5) 
+            # Remove shell=True to skip cmd.exe overhead. 
+            subprocess.run(['node', CLI_PATH, text])
+            
+            # Remove the fixed 0.5s sleep. subprocess.run is synchronous, 
+            # so the image is already in the clipboard when it returns!
             
             # 3. Paste Image
             keyboard.send('ctrl+v')
-            time.sleep(0.1) # Wait briefly for paste to process
+            time.sleep(0.05) # Brief wait for the target app to process the image paste
             
             # 4. Send Message (Enter)
             keyboard.send('enter')
