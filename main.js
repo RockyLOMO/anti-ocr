@@ -12,7 +12,7 @@ function textToImg() {
     var txt = $("txt").value;
     var canvas = $('canvas');
     if (txt == '') {
-        alert('請輸入文字');
+        alert('请输入文字');
         $("txt").focus();
     }
     if (len > txt.length) {
