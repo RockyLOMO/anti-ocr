@@ -36,21 +36,24 @@ function textToImg() {
     function drawNoise(dots, lines, color, isSlice) {
         context.strokeStyle = color;
         context.fillStyle = color;
+        
+        // Batch draw dots
+        context.lineWidth = pointSize;
+        context.beginPath();
         for (var k = 0; k < dots; k++) {
             var x = random(0, canvas.width);
             var y = random(0, canvas.height);
-            context.lineWidth = pointSize;
-            context.beginPath();
             context.moveTo(x, y);
             context.lineTo(x + 1, y + 1);
-            context.closePath();
-            context.stroke();
         }
+        context.stroke();
+
+        // Batch draw lines
+        context.lineWidth = lineSize; // keep standard line size, no thicker slicing
+        context.beginPath();
         for (var k = 0; k < lines; k++) {
             var x = random(0, canvas.width);
             var y = random(0, canvas.height);
-            context.lineWidth = lineSize; // keep standard line size, no thicker slicing
-            context.beginPath();
             context.moveTo(x, y);
             var dx = random(-canvas.width/3, canvas.width/3);
             var dy = random(-canvas.height/6, canvas.height/6);
@@ -59,8 +62,8 @@ function textToImg() {
             } else {
                 context.lineTo(x + dx, y + dy);
             }
-            context.stroke();
         }
+        context.stroke();
     }
 
     // Draw some noise below text
