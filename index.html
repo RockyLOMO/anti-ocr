@@ -1,73 +1,437 @@
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-<title>anti-ocr</title>
-<meta charset="utf-8" /> 
-<script type="text/javascript" src="./main.js"></script>
+    <meta charset="utf-8" /> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anti-OCR Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="./main.js"></script>
+    <style>
+        :root {
+            --primary-bg: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            body {
+                padding: 1rem;
+            }
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            flex: 1;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            color: var(--text-main);
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+            line-height: 1.5;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .control-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .control-group {
+                grid-template-columns: 1fr;
+            }
+            .glass-panel {
+                padding: 1rem;
+            }
+            .control-row {
+                flex-wrap: wrap;
+            }
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.03);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .control-row:hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        input[type="number"], select {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.4rem 0.5rem;
+            border-radius: 6px;
+            width: 70px;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .color-picker {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.03);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+        }
+
+        .color-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .color-header canvas {
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+            width: 24px;
+            height: 24px;
+        }
+
+        .color-sliders-container {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .color-slider {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .color-slider label {
+            width: auto;
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            min-width: 0;
+            width: 100%;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.1);
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--text-main);
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+
+        .result-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .result-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
-<div style="float: left"><textarea id="txt"
-    style="width: 400px; height: 500px;">這是一段測試文本～
+
+<div class="container">
+    <div class="glass-panel">
+        <div class="header">
+            <h1>Anti-OCR Generator</h1>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('tab-text', this)">文本输入 (Text Input)</button>
+            <button class="tab-btn" onclick="switchTab('tab-settings', this)">参数设置 (Settings)</button>
+        </div>
+
+        <div id="tab-text" class="tab-content active">
+            <textarea id="txt" placeholder="Enter text here...">這是一段測試文本～
 哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈
-喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵</textarea></div>
-<div>
-<table>
-    <tr>
-        <td><label>字体大小:</label><input size="4" id='fontSize' value='16' />px</td>
-    </tr>
-    <tr>
-        <td><label>字体精细:</label><select id="fontWeight">
-            <option value="normal">正常</option>
-            <option value="bold">粗</option>
-        </select></td>
-    </tr>
-    <tr>
-        <td><label>每行显示:</label><input size="4" id='len' value="40" />个字</td>
-    </tr>
-    <tr>
-        <td><p>文字颜色:<span id="fontcolor"></span><canvas id="fontcolor_c" width="20" height="20"></p></canvas>
+喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵喵</textarea>
+        </div>
 
-        <p>Red： <input type="range" id="fontcolor_red" min="0" max="255" value="0"
-            onchange="changeColor('fontcolor');" /></p>
-        <p>Green：<input type="range" id="fontcolor_green" min="0" max="255"
-            value="0" onchange="changeColor('fontcolor');" /></p>
-        <p>Blue： <input type="range" id="fontcolor_blue" min="0" max="255" value="0"
-            onchange="changeColor('fontcolor');" /></p></td>
-    </tr>
-        <td><p>背景颜色:<span id="backcolor"></span><canvas id="backcolor_c" width="20" height="20"></p></canvas>
+        <div id="tab-settings" class="tab-content">
+            <div class="control-group">
+            <div class="control-row">
+                <label>字体大小 (Font Size)</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem">
+                    <input type="number" id="fontSize" value="16" /> <span style="font-size: 0.8rem; color: var(--text-muted)">px</span>
+                </div>
+            </div>
+            
+            <div class="control-row">
+                <label>字体精细 (Font Weight)</label>
+                <select id="fontWeight">
+                    <option value="normal">正常</option>
+                    <option value="bold">粗</option>
+                </select>
+            </div>
+            
+            <div class="control-row">
+                <label>每行显示 (Chars/Line)</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem">
+                    <input type="number" id="len" value="40" /> <span style="font-size: 0.8rem; color: var(--text-muted)">个</span>
+                </div>
+            </div>
 
-        <p>Red： <input type="range" id="backcolor_red" min="0" max="255" value="255"
-            onchange="changeColor('backcolor');" /></p>
-        <p>Green：<input type="range" id="backcolor_green" min="0" max="255"
-            value="255" onchange="changeColor('backcolor');" /></p>
-        <p>Blue： <input type="range" id="backcolor_blue" min="0" max="255" value="255"
-            onchange="changeColor('backcolor');" /></p></td>
-    </tr>
-    <tr>
-        <td><label>線條粗細:</label><input size="4" id='lineSize' value='1' /></td>
-    </tr>
-    <tr>
-        <td><label>畫點大小:</label><input size="4" id='pointSize' value='1' /></td>
-    </tr>
-    <tr>
-        <td><label>畫點密度:</label><input type="range" id="points" min="0" max="20" value="1" /></td>
-    </tr>
-    <tr>
-    <tr>
-        <td>
-        <button onclick=
-    textToImg();;
->生成图片</button>
-        </td>
-    </tr>
-</table>
+            <div class="control-row">
+                <label>线条粗细 (Line Size)</label>
+                <input type="number" id="lineSize" value="1" />
+            </div>
+
+            <div class="control-row">
+                <label>画点大小 (Point Size)</label>
+                <input type="number" id="pointSize" value="1" />
+            </div>
+
+            <div class="control-row">
+                <label>画点密度 (Point Density)</label>
+                <input type="range" id="points" min="0" max="20" value="1" style="max-width: 120px;" />
+            </div>
+        </div>
+
+        <div class="color-picker">
+            <div class="color-header">
+                <label>文字颜色 (Text Color)</label>
+                <span id="fontcolor" class="hidden"></span>
+                <canvas id="fontcolor_c" width="20" height="20"></canvas>
+            </div>
+            <div class="color-sliders-container">
+                <div class="color-slider">
+                    <label>R</label>
+                    <input type="range" id="fontcolor_red" min="0" max="255" value="0" onchange="changeColor('fontcolor');" oninput="changeColor('fontcolor');" />
+                </div>
+                <div class="color-slider">
+                    <label>G</label>
+                    <input type="range" id="fontcolor_green" min="0" max="255" value="0" onchange="changeColor('fontcolor');" oninput="changeColor('fontcolor');" />
+                </div>
+                <div class="color-slider">
+                    <label>B</label>
+                    <input type="range" id="fontcolor_blue" min="0" max="255" value="0" onchange="changeColor('fontcolor');" oninput="changeColor('fontcolor');" />
+                </div>
+            </div>
+        </div>
+
+        <div class="color-picker">
+            <div class="color-header">
+                <label>背景颜色 (Background Color)</label>
+                <span id="backcolor" class="hidden"></span>
+                <canvas id="backcolor_c" width="20" height="20"></canvas>
+            </div>
+            <div class="color-sliders-container">
+                <div class="color-slider">
+                    <label>R</label>
+                    <input type="range" id="backcolor_red" min="0" max="255" value="255" onchange="changeColor('backcolor');" oninput="changeColor('backcolor');" />
+                </div>
+                <div class="color-slider">
+                    <label>G</label>
+                    <input type="range" id="backcolor_green" min="0" max="255" value="255" onchange="changeColor('backcolor');" oninput="changeColor('backcolor');" />
+                </div>
+                <div class="color-slider">
+                    <label>B</label>
+                    <input type="range" id="backcolor_blue" min="0" max="255" value="255" onchange="changeColor('backcolor');" oninput="changeColor('backcolor');" />
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <button class="btn-generate" onclick="textToImg()">生成图片 (Generate Image)</button>
+    </div>
+
+    <div class="glass-panel result-container">
+        <div class="header" style="margin-bottom: 0;">
+            <h1 style="font-size: 1.2rem;">预览 (Preview)</h1>
+        </div>
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; overflow: hidden; min-height: 200px;">
+            <img id="img" class="result-image" />
+        </div>
+        <canvas id="canvas" class="hidden" width="0" height="0"></canvas>
+    </div>
 </div>
-<canvas id="canvas" style="display:block" width="0" height="0"></canvas>
-<div><img id="img"
-    style="border: 1px solid" /></div>
-    <a href="https://github.com/yuzu233/anti-ocr">Github</a> | <a href="https://twitter.com/yuzuqwq">Author's Twitter</a>
+
 <script>
+    function switchTab(tabId, element) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        element.classList.add('active');
+    }
+
     changeColor("fontcolor");
     changeColor("backcolor");
 </script>
+
 </body>
 </html>
